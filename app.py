@@ -340,16 +340,10 @@ REQUIRED = [
     ROOT / "step5_enhanced.py",
     ROOT / "step6_compliant.py",
     ROOT / "step8_fixed_final.py",
+
+    ROOT / "step7.py"
 ]
 
-
-
-# --- ALLOW_STEP8_FOR_STEP7: if step7_fixed_final.py is missing but step8_fixed_final.py exists, accept step8 ---
-try:
-    _idxs = [i for i,p in enumerate(REQUIRED) if str(p).endswith("step8_fixed_final.py")]
-    # nothing to do if already step8
-except Exception:
-    pass
 # ---------------------------
 # Sidebar: πρόσβαση, όροι, λογότυπο
 # ---------------------------
@@ -405,7 +399,11 @@ if not st.session_state.accepted_terms:
 st.subheader("📦 Έλεγχος αρχείων")
 missing = _check_required_files(REQUIRED)
 
-st.caption("✅ Βρέθηκε προαιρετικό module: step7.py") if BHMA7_V3_PATH.exists() else st.caption("ℹ️ Το προαιρετικό step7.py δεν βρέθηκε (η εκτέλεση συνεχίζει κανονικά).")
+if BHMA7_V3_PATH.exists():
+    st.caption("✅ Βρέθηκε το step7.py (τρέχει μετά το step6_compliant).")
+else:
+    st.error("❌ Απαιτείται το step7.py (τρέχει μετά το step6_compliant).")
+    st.stop()
 if missing:
     st.error("❌ Λείπουν αρχεία:\n" + "\n".join(f"- {m}" for m in missing))
 else:
