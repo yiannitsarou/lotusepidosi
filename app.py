@@ -573,7 +573,7 @@ def _perf_counts_by_class(df: pd.DataFrame):
         return (pd.Series(dtype=int), pd.Series(dtype=int), pd.Series(dtype=int))
 
 
-📊 Στατιστικά τμημάτων
+st.subheader("📊 Στατιστικά τμημάτων")
 # ---------------------------
 # ΑΥΣΤΗΡΟ: ΜΟΝΟ από session_state (καμία σάρωση δίσκου)
 def _find_latest_final_path() -> Path | None:
