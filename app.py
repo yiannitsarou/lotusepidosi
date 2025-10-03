@@ -397,7 +397,10 @@ if not st.session_state.accepted_terms:
 st.subheader("📦 Έλεγχος αρχείων")
 missing = _check_required_files(REQUIRED)
 
-st.caption("✅ Βρέθηκε προαιρετικό module: bhma7_v3.py") if BHMA7_V3_PATH.exists() else st.caption("ℹ️ Το προαιρετικό bhma7_v3.py δεν βρέθηκε (η εκτέλεση συνεχίζει κανονικά).")
+if BHMA7_V3_PATH.exists():
+    st.caption("✅ Βρέθηκε προαιρετικό module: bhma7_v3.py")
+else:
+    st.caption("ℹ️ Το προαιρετικό bhma7_v3.py δεν βρέθηκε (η εκτέλεση συνεχίζει κανονικά).")
 if missing:
     st.error("❌ Λείπουν αρχεία:\n" + "\n".join(f"- {m}" for m in missing))
 else:
@@ -438,10 +441,7 @@ if st.button("🚀 ΕΚΤΕΛΕΣΗ ΚΑΤΑΝΟΜΗΣ", type="primary", use_con
                 f.write(up_all.getbuffer())
 
             m = _load_module("export_step1_6_per_scenario", ROOT / "export_step1_6_per_scenario.py")
-            s7_path = ROOT / "step7_fixed_final.py"
-            if not s7_path.exists():
-                s7_path = ROOT / "step8_fixed_final.py"
-            s7 = _load_module("step7_fixed_final", s7_path)
+            s7 = _load_module("step7_fixed_final", ROOT / "step7_fixed_final.py")
 
             step6_path = ROOT / _timestamped("STEP1_6_PER_SCENARIO", ".xlsx")
             with st.spinner("Τρέχουν τα Βήματα 1→6..."):
@@ -882,10 +882,7 @@ else:
             
 if st.button("📤 ΕΞΑΓΩΓΗ: Προσθήκη φύλλου 'Step7_Συγκριτικός'", key="btn_export_comp", use_container_width=True):
                 try:
-                    s7_path = ROOT / "step7_fixed_final.py"
-                    if not s7_path.exists():
-                        s7_path = ROOT / "step8_fixed_final.py"
-                    s7 = _load_module("step7_fixed_final", s7_path)
+                    s7 = _load_module("step7_fixed_final", ROOT / "step7_fixed_final.py")
                     summary_rows = []
                     for sheet in scenario_sheets:
                         df_sheet = xls.parse(sheet)
