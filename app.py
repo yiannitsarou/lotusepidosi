@@ -7,8 +7,8 @@ from io import BytesIO
 # Project root directory
 ROOT = Path(__file__).parent.resolve()
 
-# Optional: path to bhma7_v3.py (runs after Step 6)
-BHMA7_V3_PATH = ROOT / "bhma7_v3.py"
+# Optional: path to step7.py (runs after Step 6)
+BHMA7_V3_PATH = ROOT / "step7.py"
 
 import streamlit as st
 import pandas as pd
@@ -339,9 +339,17 @@ REQUIRED = [
     ROOT / "step4_corrected.py",
     ROOT / "step5_enhanced.py",
     ROOT / "step6_compliant.py",
-    ROOT / "step7_fixed_final.py",
+    ROOT / "step8_fixed_final.py",
 ]
 
+
+
+# --- ALLOW_STEP8_FOR_STEP7: if step7_fixed_final.py is missing but step8_fixed_final.py exists, accept step8 ---
+try:
+    _idxs = [i for i,p in enumerate(REQUIRED) if str(p).endswith("step8_fixed_final.py")]
+    # nothing to do if already step8
+except Exception:
+    pass
 # ---------------------------
 # Sidebar: πρόσβαση, όροι, λογότυπο
 # ---------------------------
@@ -397,10 +405,7 @@ if not st.session_state.accepted_terms:
 st.subheader("📦 Έλεγχος αρχείων")
 missing = _check_required_files(REQUIRED)
 
-if BHMA7_V3_PATH.exists():
-    st.caption("✅ Βρέθηκε προαιρετικό module: bhma7_v3.py")
-else:
-    st.caption("ℹ️ Το προαιρετικό bhma7_v3.py δεν βρέθηκε (η εκτέλεση συνεχίζει κανονικά).")
+st.caption("✅ Βρέθηκε προαιρετικό module: step7.py") if BHMA7_V3_PATH.exists() else st.caption("ℹ️ Το προαιρετικό step7.py δεν βρέθηκε (η εκτέλεση συνεχίζει κανονικά).")
 if missing:
     st.error("❌ Λείπουν αρχεία:\n" + "\n".join(f"- {m}" for m in missing))
 else:
@@ -441,7 +446,7 @@ if st.button("🚀 ΕΚΤΕΛΕΣΗ ΚΑΤΑΝΟΜΗΣ", type="primary", use_con
                 f.write(up_all.getbuffer())
 
             m = _load_module("export_step1_6_per_scenario", ROOT / "export_step1_6_per_scenario.py")
-            s7 = _load_module("step7_fixed_final", ROOT / "step7_fixed_final.py")
+            s7 = _load_module("step7_fixed_final", ROOT / "step8_fixed_final.py")
 
             step6_path = ROOT / _timestamped("STEP1_6_PER_SCENARIO", ".xlsx")
             with st.spinner("Τρέχουν τα Βήματα 1→6..."):
@@ -476,7 +481,7 @@ if st.button("🚀 ΕΚΤΕΛΕΣΗ ΚΑΤΑΝΟΜΗΣ", type="primary", use_con
                         else:
                             st.info("ℹ️ Το bhma7_v3 φορτώθηκε αλλά δεν παρήγαγε νέο αρχείο. Συνεχίζω στο υπάρχον Βήμα 7.")
                 else:
-                    st.caption("ℹ️ Δεν βρέθηκε bhma7_v3.py — προχωρώ κανονικά.")
+                    st.caption("ℹ️ Δεν βρέθηκε step7.py — προχωρώ κανονικά.")
             except Exception as _e:
                 st.warning(f"⚠️ Το bhma7_v3 παρουσίασε σφάλμα: {_e}. Συνεχίζω κανονικά στο Βήμα 7.")
             with st.spinner("Τρέχει το Βήμα 7..."):
@@ -882,7 +887,7 @@ else:
             
 if st.button("📤 ΕΞΑΓΩΓΗ: Προσθήκη φύλλου 'Step7_Συγκριτικός'", key="btn_export_comp", use_container_width=True):
                 try:
-                    s7 = _load_module("step7_fixed_final", ROOT / "step7_fixed_final.py")
+                    s7 = _load_module("step7_fixed_final", ROOT / "step8_fixed_final.py")
                     summary_rows = []
                     for sheet in scenario_sheets:
                         df_sheet = xls.parse(sheet)
