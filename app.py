@@ -554,7 +554,26 @@ if st.button("🚀 ΕΚΤΕΛΕΣΗ ΚΑΤΑΝΟΜΗΣ", type="primary", use_con
 st.divider()
 
 # ---------------------------
-# 📊 Στατιστικά τμημάτων
+# 
+
+
+def _perf_counts_by_class(df: pd.DataFrame):
+    """Return (perf1, perf2, perf3) Series indexed by ΤΜΗΜΑ. Missing -> empty Series[int]."""
+    try:
+        if df is None or "ΕΠΙΔΟΣΗ" not in df.columns:
+            return (pd.Series(dtype=int), pd.Series(dtype=int), pd.Series(dtype=int))
+        _perf = df["ΕΠΙΔΟΣΗ"].astype(str).str.strip()
+        if "ΤΜΗΜΑ" not in df.columns:
+            return (pd.Series(dtype=int), pd.Series(dtype=int), pd.Series(dtype=int))
+        perf1 = df[_perf.eq("1")].groupby("ΤΜΗΜΑ").size()
+        perf2 = df[_perf.eq("2")].groupby("ΤΜΗΜΑ").size()
+        perf3 = df[_perf.eq("3")].groupby("ΤΜΗΜΑ").size()
+        return (perf1, perf2, perf3)
+    except Exception:
+        return (pd.Series(dtype=int), pd.Series(dtype=int), pd.Series(dtype=int))
+
+
+📊 Στατιστικά τμημάτων
 # ---------------------------
 # ΑΥΣΤΗΡΟ: ΜΟΝΟ από session_state (καμία σάρωση δίσκου)
 def _find_latest_final_path() -> Path | None:
@@ -747,7 +766,10 @@ except Exception:
                         perf1 = pd.Series(dtype=int)
                         perf3 = pd.Series(dtype=int)
                         
-                    stats = pd.DataFrame({
+                    
+# Clean performance counts per class
+perf1, perf2, perf3 = _perf_counts_by_class(used_df)
+stats = pd.DataFrame({
                     "ΑΓΟΡΙΑ": boys,
                     "ΚΟΡΙΤΣΙΑ": girls,
                     "ΠΑΙΔΙ_ΕΚΠΑΙΔΕΥΤΙΚΟΥ": edus,
@@ -758,6 +780,7 @@ except Exception:
                     "ΣΠΑΣΜΕΝΗ ΦΙΛΙΑ": broken,
                     "ΣΥΝΟΛΟ ΜΑΘΗΤΩΝ": total,
                     "ΕΠΙΔΟΣΗ 1": perf1,
+            "ΕΠΙΔΟΣΗ 2": perf2,
             "ΕΠΙΔΟΣΗ 2": perf2,
                     "ΕΠΙΔΟΣΗ 3": perf3
                     }).fillna(0).astype(int)
