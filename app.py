@@ -232,9 +232,9 @@ def _timestamped(base: str, ext: str) -> str:
     return f"{safe}_{ts}{ext}"
 
 def _find_latest_step6():
-    """Εντοπίζει το πιο πρόσφατο αρχείο STEP1_6_PER_SCENARIO_*.xlsx στον φάκελο της εφαρμογής."""
+    """Εντοπίζει το πιο πρόσφατο αρχείο STEP1_7_PER_SCENARIO_*.xlsx στον φάκελο της εφαρμογής."""
     try:
-        candidates = sorted((p for p in ROOT.glob("STEP1_6_PER_SCENARIO*.xlsx") if p.is_file()),
+        candidates = sorted((p for p in ROOT.glob("STEP1_7_PER_SCENARIO*.xlsx") if p.is_file()),
                             key=lambda p: p.stat().st_mtime,
                             reverse=True)
         return candidates[0] if candidates else None
@@ -273,7 +273,7 @@ def _restart_app():
         pass
     # ΔΙΑΓΡΑΦΗ παραγόμενων αρχείων για πλήρη καθαρισμό
     try:
-        for pat in ("STEP7_FINAL_SCENARIO*.xlsx", "STEP1_6_PER_SCENARIO*.xlsx", "INPUT_STEP1*.xlsx"):
+        for pat in ("STEP7_FINAL_SCENARIO*.xlsx", "STEP1_7_PER_SCENARIO*.xlsx", "INPUT_STEP1*.xlsx"):
             for f in ROOT.glob(pat):
                 try:
                     f.unlink()
@@ -331,7 +331,7 @@ def _story_md():
 # Αρχεία που δεν αλλάζουμε (modules 1→7)
 # ---------------------------
 REQUIRED = [
-    ROOT / "export_step1_6_per_scenario.py",
+    ROOT / "export_step1_7_per_scenario.py",
     ROOT / "step1_immutable_ALLINONE.py",
     ROOT / "step_2_helpers_FIXED.py",
     ROOT / "step_2_zoiroi_idiaterotites_FIXED_v3_PATCHED.py",
@@ -339,7 +339,7 @@ REQUIRED = [
     ROOT / "step4_corrected.py",
     ROOT / "step5_enhanced.py",
     ROOT / "step6_compliant.py",
-    ROOT / "step7_fixed_final.py",
+    ROOT / "step8_fixed_final.py",
 
     ROOT / "step7.py"
 ]
@@ -400,10 +400,10 @@ st.subheader("📦 Έλεγχος αρχείων")
 missing = _check_required_files(REQUIRED)
 
 if BHMA7_V3_PATH.exists():
-    st.caption("✅ Βρέθηκε το step7.py (τρέχει μετά το step6_compliant).")
+    st.caption("✅ Βρέθηκε προαιρετικό module: step7.py")
 else:
     st.error("❌ Απαιτείται το step7.py (τρέχει μετά το step6_compliant).")
-    st.stop()
+    st.stop().")
 if missing:
     st.error("❌ Λείπουν αρχεία:\n" + "\n".join(f"- {m}" for m in missing))
 else:
@@ -443,12 +443,15 @@ if st.button("🚀 ΕΚΤΕΛΕΣΗ ΚΑΤΑΝΟΜΗΣ", type="primary", use_con
             with open(input_path, "wb") as f:
                 f.write(up_all.getbuffer())
 
-            m = _load_module("export_step1_6_per_scenario", ROOT / "export_step1_6_per_scenario.py")
-            s7 = _load_module("step7_fixed_final", ROOT / "step7_fixed_final.py")
+            m = _load_module("export_step1_7_per_scenario", ROOT / "export_step1_7_per_scenario.py")
+            s7_path = ROOT / "step8_fixed_final.py"
+            if not s7_path.exists():
+                s7_path = ROOT / "step8_fixed_final.py"
+            s7 = _load_module("step7_fixed_final", s7_path)
 
-            step6_path = ROOT / _timestamped("STEP1_6_PER_SCENARIO", ".xlsx")
-            with st.spinner("Τρέχουν τα Βήματα 1→6..."):
-                m.build_step1_6_per_scenario(str(input_path), str(step6_path), pick_step4=pick_step4_all)
+            step6_path = ROOT / _timestamped("STEP1_7_PER_SCENARIO", ".xlsx")
+            with st.spinner("Τρέχουν τα Βήματα 1→7..."):
+                m.build_STEP1_7_PER_SCENARIO(str(input_path), str(step6_path), pick_step4=pick_step4_all)
 
             # --- ΝΕΟ: Τρέξε bhma7_v3 (αν υπάρχει) αμέσως μετά το Βήμα 6 ---
             try:
@@ -493,7 +496,7 @@ if st.button("🚀 ΕΚΤΕΛΕΣΗ ΚΑΤΑΝΟΜΗΣ", type="primary", use_con
                     import random as _rnd
                     for sheet in sheet_names:
                         df_sheet = pd.read_excel(step6_path, sheet_name=sheet)
-                        scen_cols = [c for c in df_sheet.columns if re.match(r"^ΒΗΜΑ6_ΣΕΝΑΡΙΟ_\d+$", str(c))]
+                        scen_cols = [c for c in df_sheet.columns if re.match(r"^ΒΗΜΑ7_ΣΕΝΑΡΙΟ_\d+$", str(c))]
                         for col in scen_cols:
                             s = s7.score_one_scenario(df_sheet, col)
                             s["sheet"] = sheet
@@ -587,9 +590,9 @@ else:
 
     if xl is not None and "FINAL_SCENARIO" in sheets:
         used_df = xl.parse("FINAL_SCENARIO")
-        scen_cols = [c for c in used_df.columns if re.match(r"^ΒΗΜΑ6_ΣΕΝΑΡΙΟ_\d+$", str(c))]
+        scen_cols = [c for c in used_df.columns if re.match(r"^ΒΗΜΑ7_ΣΕΝΑΡΙΟ_\d+$", str(c))]
         if len(scen_cols) != 1:
-            st.error("❌ Απαιτείται **ακριβώς μία** στήλη `ΒΗΜΑ6_ΣΕΝΑΡΙΟ_N` στο FINAL_SCENARIO.")
+            st.error("❌ Απαιτείται **ακριβώς μία** στήλη `ΒΗΜΑ7_ΣΕΝΑΡΙΟ_N` στο FINAL_SCENARIO.")
         else:
             used_df["ΤΜΗΜΑ"] = used_df[scen_cols[0]].astype(str).str.strip()
 
@@ -753,6 +756,7 @@ else:
                         "ΣΠΑΣΜΕΝΗ ΦΙΛΙΑ": broken,
                         "ΣΥΝΟΛΟ ΜΑΘΗΤΩΝ": total,
                         "ΕΠΙΔΟΣΗ 1": perf1,
+            "ΕΠΙΔΟΣΗ 2": perf2,
                         "ΕΠΙΔΟΣΗ 2": perf2,
                         "ΕΠΙΔΟΣΗ 3": perf3,
                     }).fillna(0).astype(int)
@@ -859,7 +863,7 @@ if auto_s6_path and Path(auto_s6_path).exists():
 
 # 2) Fallback σε manual upload (αν δεν βρέθηκε αρχείο ή άνοιγμα απέτυχε)
 if xls is None:
-    uploaded_s6 = st.file_uploader("Φόρτωσε αρχείο STEP1_6_PER_SCENARIO_*.xlsx", type=["xlsx"], key="u_s6_all")
+    uploaded_s6 = st.file_uploader("Φόρτωσε αρχείο STEP1_7_PER_SCENARIO_*.xlsx", type=["xlsx"], key="u_s6_all")
     if uploaded_s6 is not None:
         try:
             xls = pd.ExcelFile(uploaded_s6)
@@ -867,7 +871,7 @@ if xls is None:
             st.error(f"Αποτυχία ανοίγματος: {e}")
 
 if xls is None:
-    st.info("Δεν βρέθηκε έγκυρο αρχείο Βήματος 6. Δημιούργησέ το στην ενότητα εξαγωγής (1→6).")
+    st.info("Δεν βρέθηκε έγκυρο αρχείο Βήματος 6. Δημιούργησέ το στην ενότητα εξαγωγής (1→7).")
 else:
     # 3) Διάλεξε μόνο τα σωστά sheets (ΣΕΝΑΡΙΟ_*). Αγνόησε τυχόν 'Sheet1' κ.λπ.
     scenario_sheets = [s for s in xls.sheet_names if str(s).startswith("ΣΕΝΑΡΙΟ_")]
@@ -880,16 +884,19 @@ else:
             st.warning("Το φύλλο είναι κενό.")
         else:
             st.dataframe(df_prev.head(200), use_container_width=True)
-            # ➕ Εξαγωγή "Step7_Συγκριτικός" σε επιπλέον φύλλο (μία γραμμή ανά ΣΕΝΑΡΙΟ_*)
+            # ➕ Εξαγωγή "Step8_Συγκριτικός" σε επιπλέον φύλλο (μία γραμμή ανά ΣΕΝΑΡΙΟ_*)
             st.markdown("—")
             
-if st.button("📤 ΕΞΑΓΩΓΗ: Προσθήκη φύλλου 'Step7_Συγκριτικός'", key="btn_export_comp", use_container_width=True):
+if st.button("📤 ΕΞΑΓΩΓΗ: Προσθήκη φύλλου 'Step8_Συγκριτικός'", key="btn_export_comp", use_container_width=True):
                 try:
-                    s7 = _load_module("step7_fixed_final", ROOT / "step7_fixed_final.py")
+                    s7_path = ROOT / "step8_fixed_final.py"
+                    if not s7_path.exists():
+                        s7_path = ROOT / "step8_fixed_final.py"
+                    s7 = _load_module("step7_fixed_final", s7_path)
                     summary_rows = []
                     for sheet in scenario_sheets:
                         df_sheet = xls.parse(sheet)
-                        scen_cols = [c for c in df_sheet.columns if re.match(r"^ΒΗΜΑ6_ΣΕΝΑΡΙΟ_\d+$", str(c))]
+                        scen_cols = [c for c in df_sheet.columns if re.match(r"^ΒΗΜΑ7_ΣΕΝΑΡΙΟ_\d+$", str(c))]
                         if not scen_cols:
                             continue
 
@@ -926,17 +933,17 @@ if st.button("📤 ΕΞΑΓΩΓΗ: Προσθήκη φύλλου 'Step7_Συγκ
                             "Φύλλο","Στήλη","Συνολικό Score","Σπασμένες δυάδες",
                             "Διαφορά Πληθυσμού","Σύνολο Διαφοράς Φύλου","Διαφορά Ελληνικών"
                         ])
-                        base_name = Path(auto_s6_path).stem if auto_s6_path else "STEP1_6_PER_SCENARIO"
+                        base_name = Path(auto_s6_path).stem if auto_s6_path else "STEP1_7_PER_SCENARIO"
                         out_name = _timestamped(base_name + "_WITH_STEP7_ΣΥΓΚΡΙΤΙΚΟΣ", ".xlsx")
                         out_path = ROOT / out_name
                         with pd.ExcelWriter(out_path, engine="xlsxwriter") as w:
                             for sheet in xls.sheet_names:
                                 df_sheet = xls.parse(sheet)
                                 df_sheet.to_excel(w, index=False, sheet_name=sheet[:31] if len(sheet) > 31 else sheet)
-                            compare_df.to_excel(w, index=False, sheet_name="Step7_Συγκριτικός")
-                        st.success("✅ Δημιουργήθηκε ο 'Step7_Συγκριτικός'.")
+                            compare_df.to_excel(w, index=False, sheet_name="Step8_Συγκριτικός")
+                        st.success("✅ Δημιουργήθηκε ο 'Step8_Συγκριτικός'.")
                         st.download_button(
-                            label="⬇️ Κατέβασε αρχείο με 'Step7_Συγκριτικός'",
+                            label="⬇️ Κατέβασε αρχείο με 'Step8_Συγκριτικός'",
                             data=out_path.read_bytes(),
                             file_name=out_path.name,
                             mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
