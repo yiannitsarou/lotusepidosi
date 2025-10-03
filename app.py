@@ -734,30 +734,26 @@ else:
                 except Exception:
                     broken = pd.Series(dtype=int)
 
-                    # --- ΕΠΙΔΟΣΗ 1 και ΕΠΙΔΟΣΗ 3 ---
-                    if "ΕΠΙΔΟΣΗ" in df.columns:
-                        _perf = df["ΕΠΙΔΟΣΗ"].astype(str).str.strip()
-                        perf1 = df[_perf.eq("1")].groupby("ΤΜΗΜΑ").size() if "ΤΜΗΜΑ" in df.columns else pd.Series(dtype=int)
-try:
-    perf2 = df[_perf.eq("2")].groupby("ΤΜΗΜΑ").size() if "ΤΜΗΜΑ" in df.columns else pd.Series(dtype=int)
-except Exception:
-    perf2 = pd.Series(dtype=int)
-                        perf3 = df[_perf.eq("3")].groupby("ΤΜΗΜΑ").size() if "ΤΜΗΜΑ" in df.columns else pd.Series(dtype=int)
-                    else:
-                        perf1 = pd.Series(dtype=int)
-                        perf3 = pd.Series(dtype=int)
-                        
+                    # ΕΠΙΔΟΣΗ 1/2/3 και δημιουργία πίνακα στατιστικών
+                    perf1, perf2, perf3 = _perf_counts_by_class(df)
                     stats = pd.DataFrame({
-                    "ΑΓΟΡΙΑ": boys,
-                    "ΚΟΡΙΤΣΙΑ": girls,
-                    "ΠΑΙΔΙ_ΕΚΠΑΙΔΕΥΤΙΚΟΥ": edus,
-                    "ΖΩΗΡΟΙ": z,
-                    "ΙΔΙΑΙΤΕΡΟΤΗΤΑ": id_,
-                    "ΓΝΩΣΗ ΕΛΛΗΝΙΚΩΝ": g,
-                    "ΣΥΓΚΡΟΥΣΗ": conf_by_class,
-                    "ΣΠΑΣΜΕΝΗ ΦΙΛΙΑ": broken,
-                    "ΣΥΝΟΛΟ ΜΑΘΗΤΩΝ": total,
-                    "ΕΠΙΔΟΣΗ 1": perf1,
+                        "ΑΓΟΡΙΑ": boys,
+                        "ΚΟΡΙΤΣΙΑ": girls,
+                        "ΠΑΙΔΙ_ΕΚΠΑΙΔΕΥΤΙΚΟΥ": edus,
+                        "ΖΩΗΡΟΙ": z,
+                        "ΙΔΙΑΙΤΕΡΟΤΗΤΑ": id_,
+                        "ΓΝΩΣΗ ΕΛΛΗΝΙΚΩΝ": g,
+                        "ΣΥΓΚΡΟΥΣΗ": conf_by_class,
+                        "ΣΠΑΣΜΕΝΗ ΦΙΛΙΑ": broken,
+                        "ΣΥΝΟΛΟ ΜΑΘΗΤΩΝ": total,
+                        "ΕΠΙΔΟΣΗ 1": perf1,
+                        "ΕΠΙΔΟΣΗ 2": perf2,
+                        "ΕΠΙΔΟΣΗ 3": perf3,
+                    }).fillna(0).astype(int)
+                try:
+                    stats = stats.sort_index(key=lambda x: x.str.extract(r"(\d+)")[0].astype(float))
+                except Exception:
+                    stats = stats.sort_index()
                 return stats
 
             def export_stats_to_excel(stats_df: pd.DataFrame) -> BytesIO:
