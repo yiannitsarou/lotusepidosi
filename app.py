@@ -573,7 +573,7 @@ def _perf_counts_by_class(df: pd.DataFrame):
         return (pd.Series(dtype=int), pd.Series(dtype=int), pd.Series(dtype=int))
 
 
-📊 Στατιστικά τμημάτων
+st.subheader("📊 Στατιστικά τμημάτων")
 # ---------------------------
 # ΑΥΣΤΗΡΟ: ΜΟΝΟ από session_state (καμία σάρωση δίσκου)
 def _find_latest_final_path() -> Path | None:
@@ -752,9 +752,7 @@ else:
                         broken = pd.Series(counts).astype(int)
                 except Exception:
                     broken = pd.Series(dtype=int)
-                        
-                    
-# Clean performance counts per class
+
 perf1, perf2, perf3 = _perf_counts_by_class(used_df)
 stats = pd.DataFrame({
                     "ΑΓΟΡΙΑ": boys,
@@ -767,6 +765,7 @@ stats = pd.DataFrame({
                     "ΣΠΑΣΜΕΝΗ ΦΙΛΙΑ": broken,
                     "ΣΥΝΟΛΟ ΜΑΘΗΤΩΝ": total,
                     "ΕΠΙΔΟΣΗ 1": perf1,
+            "ΕΠΙΔΟΣΗ 2": perf2,
             "ΕΠΙΔΟΣΗ 2": perf2,
                     "ΕΠΙΔΟΣΗ 3": perf3
                     }).fillna(0).astype(int)
